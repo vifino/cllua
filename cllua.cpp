@@ -30,15 +30,25 @@ int main() {
 
 	// Load kernel.cl
 	std::ifstream t("kernel.cl");
-  std::string kernel_code((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+	std::string kernel_code((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 
-  sources.push_back({kernel_code.c_str(),kernel_code.length()});
+	sources.push_back({kernel_code.c_str(),kernel_code.length()});
 
-  cl::Program program(context,sources);
+	cl::Program program(context,sources);
 	if(program.build({default_device})!=CL_SUCCESS){
 		std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device)<<"\n"; // Build failure.
 		exit(1);
 	}
-	
+	// load source into here
+	std::ifstream s("source.lua");
+	std::string luacode((std::istreambuf_iterator<char>(s)), std::istreambuf_iterator<char>());
+	std::int luasource_size;
+
+
+	cl::Buffer buffer_luacode(context,CL_MEM_READ_WRITE,sizeof(char)*luasource_size);
+
+	cl::CommandQueue queue(context,default_device);
+	queue.enqueueWriteBuffer(buffer_luacode,CL_TRUE,0,sizeof(char)*luasource_size,luasource);
+
 	return 0;
 }
