@@ -1,7 +1,7 @@
 -- lua5.1/luajit
 function run(cmd)
 	print("$ "..cmd)
-	return os.execute(cmd)/256
+	return os.execute(cmd)
 end
 
 local files = table.concat({"cllua.cpp"}," ")
