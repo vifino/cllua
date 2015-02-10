@@ -35,7 +35,11 @@ int scriptMemoryWriter(lua_State* ls, const void* p, size_t sz, void* ud)
     return 0;
 }
 
+unsigned char outputBuffer[0x8000];
+
 int main() {
+	memset(outputBuffer,0,0x8000);
+	
 	std::vector<cl::Platform> all_platforms;
 	cl::Platform::get(&all_platforms);
 	if(all_platforms.size()==0){
@@ -84,7 +88,7 @@ int main() {
 	lua_dump(state,scriptMemoryWriter,&bd);
 
 	cl::Buffer buffer_luacode(context,CL_MEM_READ_WRITE,sizeof(char)*bytecode_len);
-
+	
 	cl::CommandQueue queue(context,default_device);
 	queue.enqueueWriteBuffer(buffer_luacode,CL_TRUE,0,sizeof(char)*bytecode_len,bytecode);
 	
