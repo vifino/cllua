@@ -2,7 +2,38 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
+
 #include <CL/cl.hpp>
+
+extern "C" {
+	#include <lua5.1/lua.h>
+	#include <lua5.1/lauxlib.h>
+}
+
+typedef struct {
+    size_t *len;
+    char **data;
+} BS_DESCRIP;
+
+int scriptMemoryWriter(lua_State* ls, const void* p, size_t sz, void* ud)
+{
+    BS_DESCRIP* bd = (BS_DESCRIP*)ud;
+    char* newData = (char*)realloc(*(bd->data), (*(bd->len)) + sz);
+
+    if(newData)
+    {
+        memcpy(newData + (*(bd->len)), p, sz);
+        *(bd->data) = newData;
+        *(bd->len) += sz;
+
+    } else {
+        free(newData);
+
+        return 1;
+    }
+
+    return 0;
+}
 
 int main() {
 	std::vector<cl::Platform> all_platforms;
@@ -39,16 +70,27 @@ int main() {
 		std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device)<<"\n"; // Build failure.
 		exit(1);
 	}
+	std::cout<< "Built without errors"<<"\n";
 	// load source into here
 	std::ifstream s("source.lua");
-	std::string luacode((std::istreambuf_iterator<char>(s)), std::istreambuf_iterator<char>());
-	std::int luasource_size;
+	std::string luasource((std::istreambuf_iterator<char>(s)), std::istreambuf_iterator<char>());
+	int luasource_size;
+	
+	lua_State *state = luaL_newstate();
+	luaL_loadbuffer(state, luasource.c_str(), luasource.length(), "cl_lua");
+	char* bytecode = 0L;
+    size_t bytecode_len = 0;
+    BS_DESCRIP bd = {&bytecode_len, &bytecode};
+	lua_dump(state,scriptMemoryWriter,&bd);
 
-
-	cl::Buffer buffer_luacode(context,CL_MEM_READ_WRITE,sizeof(char)*luasource_size);
+	cl::Buffer buffer_luacode(context,CL_MEM_READ_WRITE,sizeof(char)*bytecode_len);
 
 	cl::CommandQueue queue(context,default_device);
-	queue.enqueueWriteBuffer(buffer_luacode,CL_TRUE,0,sizeof(char)*luasource_size,luasource);
+	queue.enqueueWriteBuffer(buffer_luacode,CL_TRUE,0,sizeof(char)*bytecode_len,bytecode);
+	
+	cl::make_kernel<cl::Buffer> lua_vm(cl::Kernel(program,"lua_vm"));
+	cl::EnqueueArgs eargs(queue,cl::NDRange(1),cl::NullRange);
+    lua_vm(eargs,buffer_luacode).wait();
 
 	return 0;
 }

@@ -3,12 +3,13 @@ function run(cmd)
 	print("$ "..cmd)
 	return os.execute(cmd)/256
 end
-local file = "cllua.c"
-local out = "cllua"
-local libs = {"OpenCl"}
-local cmdline = os.getenv("CC") or "clang"
-cmdline = cmdline .. " -std=c++ "..file.." -o "..out 
-for _,v in pairs(libs) do
-	cmdline = cmdline .. " -l"..v
-end
-run(cmdline)
+
+local files = table.concat({"cllua.cpp"}," ")
+local obj = "cllua.o"
+local exe = "cllua"
+local cpp = os.getenv("CPP") or "g++"
+local libs = "-l"..table.concat({"OpenCL","lua5.1"}," -l")
+local cppflags = "-c -std=c++11"
+
+run(cpp.." "..files.." "..cppflags.." -o "..obj)
+run(cpp.." "..obj.." "..libs.." -o "..exe)
