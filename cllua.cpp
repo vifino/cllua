@@ -71,7 +71,7 @@ int main() {
 
 	cl::Program program(context,sources);
 	if(program.build({default_device})!=CL_SUCCESS){
-		std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device)<<"\n"; // Build failure.
+		std::cout<<"Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device)<<"\n"; // Build failure.
 		exit(1);
 	}
 	std::cout<< "Built without errors"<<"\n";
@@ -83,8 +83,8 @@ int main() {
 	lua_State *state = luaL_newstate();
 	luaL_loadbuffer(state, luasource.c_str(), luasource.length(), "cl_lua");
 	char* bytecode = 0L;
-    size_t bytecode_len = 0;
-    BS_DESCRIP bd = {&bytecode_len, &bytecode};
+	size_t bytecode_len = 0;
+	BS_DESCRIP bd = {&bytecode_len, &bytecode};
 	lua_dump(state,scriptMemoryWriter,&bd);
 
 	cl::Buffer buffer_luacode(context,CL_MEM_READ_WRITE,sizeof(char)*bytecode_len);
@@ -94,7 +94,7 @@ int main() {
 	
 	cl::make_kernel<cl::Buffer> lua_vm(cl::Kernel(program,"lua_vm"));
 	cl::EnqueueArgs eargs(queue,cl::NDRange(1),cl::NullRange);
-    lua_vm(eargs,buffer_luacode).wait();
+	lua_vm(eargs,buffer_luacode).wait();
 
 	return 0;
 }
