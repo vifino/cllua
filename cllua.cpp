@@ -70,7 +70,7 @@ int main() {
 	std::string kernel_code((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());*/
 
 	/*sources.push_back({kernel_code.c_str(),kernel_code.length()});*/
-	sources.push_back({kernel_cl,kernel_cl_len});
+	sources.push_back({(const char*)kernel_cl,(size_t)kernel_cl_len});
 
 	cl::Program program(context,sources);
 	if(program.build({default_device})!=CL_SUCCESS){
