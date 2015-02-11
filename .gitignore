@@ -30,3 +30,6 @@ cllua
 
 # Generated files
 kernel_cl.h
+
+# Vim files
+*.un~
