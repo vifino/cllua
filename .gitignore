@@ -33,3 +33,6 @@ kernel_cl.h
 
 # Vim files
 *.un~
+
+# Idea
+.idea
