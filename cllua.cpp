@@ -45,7 +45,7 @@ int main() {
 	std::vector<cl::Platform> all_platforms;
 	cl::Platform::get(&all_platforms);
 	if(all_platforms.size()==0){
-		std::cout<<" No platforms found. Check OpenCL installation!\n"; // No Vendor ICD's installed.
+		std::cout<<"No platforms found. Check OpenCL installation!\n"; // No Vendor ICD's installed.
 		exit(1);
 	}
 	cl::Platform default_platform=all_platforms[0];
@@ -55,11 +55,11 @@ int main() {
 	std::vector<cl::Device> all_devices;
 	default_platform.getDevices(CL_DEVICE_TYPE_ALL, &all_devices); // No Vendor ICD's installed.
 	if(all_devices.size()==0){
-		std::cout<<" No devices found. Check OpenCL installation!\n";
+		std::cout<<"No devices found. Check OpenCL installation!\n";
 		exit(1);
 	}
 	cl::Device default_device=all_devices[0];
-	std::cout<< "Using device: "<<default_device.getInfo<CL_DEVICE_NAME>()<<"\n"; // Print the device we are using.
+	std::cout << "Using device:   "<<default_device.getInfo<CL_DEVICE_NAME>()<<"\n"; // Print the device we are using.
 
 	cl::Context context({default_device});
 

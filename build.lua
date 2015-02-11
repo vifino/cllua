@@ -1,4 +1,4 @@
--- lua5.1/luajit
+#!/usr/bin/env lua
 function run(cmd)
 	print("$ "..cmd)
 	return os.execute(cmd)
