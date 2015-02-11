@@ -27,3 +27,6 @@
 *.out
 *.app
 cllua
+
+# Generated files
+kernel_cl.h
