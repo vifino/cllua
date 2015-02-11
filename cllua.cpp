@@ -5,6 +5,8 @@
 
 #include <CL/cl.hpp>
 
+#include "kernel_cl.h"
+
 extern "C" {
 	#include <lua5.1/lua.h>
 	#include <lua5.1/lauxlib.h>
@@ -39,7 +41,7 @@ unsigned char outputBuffer[0x8000];
 
 int main() {
 	memset(outputBuffer,0,0x8000);
-	
+
 	std::vector<cl::Platform> all_platforms;
 	cl::Platform::get(&all_platforms);
 	if(all_platforms.size()==0){
@@ -64,10 +66,11 @@ int main() {
 	cl::Program::Sources sources;
 
 	// Load kernel.cl
-	std::ifstream t("kernel.cl");
-	std::string kernel_code((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+	/*std::ifstream t("kernel.cl");
+	std::string kernel_code((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());*/
 
-	sources.push_back({kernel_code.c_str(),kernel_code.length()});
+	/*sources.push_back({kernel_code.c_str(),kernel_code.length()});*/
+	sources.push_back({kernel_cl,kernel_cl_len});
 
 	cl::Program program(context,sources);
 	if(program.build({default_device})!=CL_SUCCESS){
@@ -79,7 +82,7 @@ int main() {
 	std::ifstream s("source.lua");
 	std::string luasource((std::istreambuf_iterator<char>(s)), std::istreambuf_iterator<char>());
 	int luasource_size;
-	
+
 	lua_State *state = luaL_newstate();
 	luaL_loadbuffer(state, luasource.c_str(), luasource.length(), "cl_lua");
 	char* bytecode = 0L;
@@ -88,10 +91,10 @@ int main() {
 	lua_dump(state,scriptMemoryWriter,&bd);
 
 	cl::Buffer buffer_luacode(context,CL_MEM_READ_WRITE,sizeof(char)*bytecode_len);
-	
+
 	cl::CommandQueue queue(context,default_device);
 	queue.enqueueWriteBuffer(buffer_luacode,CL_TRUE,0,sizeof(char)*bytecode_len,bytecode);
-	
+
 	cl::make_kernel<cl::Buffer> lua_vm(cl::Kernel(program,"lua_vm"));
 	cl::EnqueueArgs eargs(queue,cl::NDRange(1),cl::NullRange);
 	lua_vm(eargs,buffer_luacode).wait();
